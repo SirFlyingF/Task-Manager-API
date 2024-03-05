@@ -13,10 +13,6 @@ Install dependencies
 pip3 install -r requirements.txt
 ```
 
-To run in development mode you can run the flask dev server 
-```
-python3 run.py
-```
 
 To run in Production or Test, set environment variable 'ENVIRON' as either 'PROD' or 'TEST' respectively. To run in gunicorn execute
 ```
