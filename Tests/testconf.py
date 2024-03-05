@@ -1,16 +1,24 @@
 import os
 from TaskMan import create_app
-from config import get_config
-import pytest
+import pytest, json
 
-@pytest.fixture(scope='module')
-def test_client():
-    # Set the Testing configuration prior to creating the Flask application
-    os.environ['ENVIRON'] ='DEV'    
+
+@pytest.fixture(scope="session")
+def secure_client(): 
+    os.environ['ENVIRON'] ='TEST'    
     flask_app = create_app()
 
-    # Create a test client using the Flask application configured for testing
-    with flask_app.test_client() as testing_client:
-        # Establish an application context
+    with flask_app.test_client() as client:
         with flask_app.app_context():
-            yield testing_client  # this is where the testing happens!
+            # Sign in using a test user. Use this for all other tests
+            json_dict = {
+                            "auth" :
+                            {
+                                "email" : "kabirsharma2905@gmail.com",
+                                "password" : "bunny1234"
+                            }
+                        }
+            response = client.post('/auth/signin', json=json_dict)
+            json = response.get_json()
+            setattr(client, '__token', json['data']['token'])
+            yield client

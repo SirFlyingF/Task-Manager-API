@@ -9,7 +9,7 @@ class DataBase:
 
 
     def init_session(self, app):
-        self.engine = app.config['DB_URL']
+        self.engine = create_engine(app.config['DB_URL'])
         self.session = scoped_session(sessionmaker(autocommit=False,
                                                 autoflush=False,
                                                 bind=self.engine))
@@ -27,6 +27,7 @@ database = DataBase()
 # Do not call unless creating new DB from scratch
 def init_db():
     from . import models
-    Base.metadata.create_all(bind=engine)
+    database.Base.metadata.create_all(bind=database.engine)
+
 
     

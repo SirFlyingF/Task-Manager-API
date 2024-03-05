@@ -23,14 +23,10 @@ class Task(Base):
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow) 
     active_ind = Column(Boolean, nullable=False, default=True)
 
-    user = relationship('user', foreign_keys='Task.user_id')
+    user = relationship('User', foreign_keys='Task.user_id')
 
-    def __init__(self, data):
+    def __init__(self):
         super().__init__()
-        self.user_id = data['user_id']
-        self.title = data['title']
-        self.description = data['description']
-        self.completed = data['completed']
         
     def _serial(self):
         dict = {
@@ -52,7 +48,7 @@ class Token(Base):
     __tablename__ = 'token'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
-    token = Column(String(128), nullable=False)
+    token = Column(String(256), nullable=False)
     login_ind = Column(Boolean, nullable=False) #indicate if expired
     
 class User(Base):

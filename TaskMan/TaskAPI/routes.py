@@ -35,8 +35,3 @@ def ModifyTask(uzr_ctx, id=None):
 @login_required
 def DeleteTask(uzr_ctx, id=None):
     return TaskAPI(request, uzr_ctx).delete_task(id=id)
-
-@tasks.route('/', methods=['GET'])
-@login_required
-def TaskLanding(uzr_ctx, id=None):
-    return jsonify(get_resp_struct(msg='Logged in Succesfully')), 200

@@ -12,20 +12,22 @@ def get_resp_struct(data=None, msg=''):
 def login_required(f):
     # Decorator for login required
     @wraps(f)
-    def is_signedin():
-        token = request.authorization.split()[1] 
+    def is_signedin(*args, **kwargs):
+        token = str(request.authorization).split(' ')[1] if request.authorization else ''
 
-        login_ind = database.session.query(Token).filter(token=token).login_ind
-        if not login_ind:
+        tkn = database.session.query(Token).filter(Token.token==token).first()
+ 
+        if not tkn or not tkn.login_ind:
             return jsonify(get_resp_struct(msg='User not signed in')), 403
         
-        ctx = jwt.decode(token, app.config['SECRET_KEY'])
-        if ctx['expiring'] < datetime.utcnow():
+        try:
+            ctx = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        except (jwt.exceptions.ExpiredSignatureError,jwt.exceptions.InvalidSignatureError):
             return jsonify(get_resp_struct(msg='User not signed in')), 403
         
         # Handle invalid ctx
         if ctx['position'] not in ["USER", "ADMIN"]:
             return jsonify(get_resp_struct(msg='User Position not in ["USER", "ADMIN"]'))
         
-        return f(ctx)
+        return f(ctx, *args, **kwargs)
     return is_signedin

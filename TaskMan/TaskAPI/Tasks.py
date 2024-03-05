@@ -52,29 +52,17 @@ class TaskAPI:
 
     
 
-    def get_all_tasks(self, uzr_ctx):
+    def get_all_tasks(self):
         endpoint = 'GetAllTasks'
 
         q = session.query(Task).filter(Task.active_ind==True)
-        if uzr_ctx['position'] == 'USER':
-            q = q.filter(Task.user.has(id=uzr_ctx['user_id']))
-
-        # if 'completed' in self.request.args:
-        #     if self.request.args.get('completed') == "True":
-        #         q = q.filter(Task.completed==True)
-        #     else:
-        #         q = q.filter(Task.completed==True)
-        
-        # if 'create' in self.request.args:
-        #     if self.request.args.get('completed') == "True":
-        #         q = q.filter(Task.completed==True)
-        #     else:
-        #         q = q.filter(Task.completed==True)
+        if self.uzr_ctx['position'] == 'USER':
+            q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))
         
         # PAginate using query params
         page = 1 if 'page' not in self.request.args else self.request.args.get('page')
         page_size = 20 if 'page_size' not in self.request.args else self.request.args.get('page_size')
-        tasks = q.offset((page - 1) * page_size).limit(page_size).all()
+        tasks = q.offset((int(page) - 1) * int(page_size)).limit(int(page_size)).all()
 
         response = get_resp_struct()
         response['data'] = []
@@ -88,26 +76,22 @@ class TaskAPI:
 
 
 
-    def get_task(self, uzr_ctx, id):
+    def get_task(self, id):
         endpoint = 'GetTask'
         try:
             q = session.query(Task).filter(
                                         Task.id==id,
                                         Task.active_ind==True,
                                     )
-            if uzr_ctx['position'] == 'USER':
-                q = q.filter(Task.user.has(id=uzr_ctx['user_id']))
-
-            # PAginate using query params
-            page = 1 if 'page' not in self.request.args else self.request.args.get('page')
-            page_size = 20 if 'page_size' not in self.request.args else self.request.args.get('page_size')
-            task = q.offset((page - 1) * page_size).limit(page_size).all()
+            if self.uzr_ctx['position'] == 'USER':
+                q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))
             
+            task = q.first()
             response = get_resp_struct()
             if not task:
                 return jsonify(get_resp_struct(msg='Resource Not Found')), 404
             
-            response['data'].append(task._serial())
+            response['data'] = task._serial()
         except Exception as e:
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
         
@@ -115,7 +99,7 @@ class TaskAPI:
     
 
 
-    def add_task(self, uzr_ctx):
+    def add_task(self):
         endpoint = 'AddTask'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
@@ -125,7 +109,6 @@ class TaskAPI:
             task: {
                 title,
                 description,
-                completed,
             }
         }
         '''
@@ -133,7 +116,7 @@ class TaskAPI:
         try:
             task = Task()
             task.title = json['title']
-            task.user_id = uzr_ctx['user_id']
+            task.user_id = self.uzr_ctx['user_id']
             task.completed = None if 'completed' not in json else json['completed']
             task.description = None if 'description' not in json else json['description']
 
@@ -142,11 +125,10 @@ class TaskAPI:
         except Exception:
             session.rollback()
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
-        
         return jsonify(get_resp_struct(data={'id':task.id})), 200 
     
-    def modify_task(self, uzr_ctx, id):
-        endpoint = 'ModiyTask'
+    def modify_task(self, id):
+        endpoint = 'ModifyTask'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
@@ -161,33 +143,44 @@ class TaskAPI:
         json = (self.request.json)['task']
         try:
             q = session.query(Task).filter(Task.id==id)
-            if uzr_ctx['position'] == 'USER':
-                q = q.filter(Task.user.has(id=uzr_ctx['user_id']))
-
-            task = q.all()
-            task.description = json['description']
-            task.completed = json['completed']
+            if self.uzr_ctx['position'] == 'USER':
+                print(self.uzr_ctx)
+                q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))
+            
+            print(q.statement.compile(compile_kwargs={"literal_binds": True}))
+            task = q.first()
+            if not task:
+                return jsonify(get_resp_struct(msg='Resource Not Found')), 404
+            
+            if 'description' in json:
+                task.description = json['description']
+            if 'completed' in json:
+                task.completed = json['completed']
 
             session.commit()               
         except Exception as e:
             session.rollback()
-            return jsonify(get_resp_struct(msg='Internal Server Error')), 500
+            return jsonify(get_resp_struct(msg=str(e) +'Internal Server Error')), 500
         return jsonify(get_resp_struct(msg='Success')), 200
     
 
 
 
-    def delete_task(self, uzr_ctx, id):
+    def delete_task(self, id):
         endpoint = 'DeleteTask'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
 
         try:
-            q = session.query(Task).filter(Task.id==id)
-            if uzr_ctx['position'] == 'USER':
-                q = q.filter(Task.user.has(id=uzr_ctx['user_id']))
-            task = q.all()
+            q = session.query(Task).filter(Task.id==id, Task.active_ind==True)
+            if self.uzr_ctx['position'] == 'USER':
+                q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))
+            task = q.first()
+
+            if not task:
+                return jsonify(get_resp_struct(msg='Resource Not Found')), 404
+
             # Reset active_ind for soft delete
             task.active_ind = False
             session.commit()               

@@ -31,6 +31,7 @@ class AuthAPI:
                 return True, "", 200
             
             case 'SignUp':
+                json = self.request.json
                 if 'auth' not in json:
                     return False, "Invalid Request", 400
                 if not {'email', 'password', 'name_first'}.issubset(json['auth'].keys()):
@@ -47,47 +48,50 @@ class AuthAPI:
 
 
     def sign_in(self):
-        endpoint = 'SignUp'
+        endpoint = 'SignIn'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
 
         json = self.request.json['auth']
-        uzr = session.query(User)\
+
+        q = session.query(User)\
                     .filter(
-                            User.email==json['email'],
-                    ).first()
+                            User.email==json['email']
+                    )
+        uzr = q.first()
         if not uzr:
             return jsonify(get_resp_struct(msg='User Not Found')), 404
 
-        # If username and password is not correct
-        pwmatch = check_password_hash(uzr.pw_hash, json['password'])
-        if not pwmatch:
-            return jsonify(get_resp_struct(msg='Invalid email or password', status=401))
-
-        # Generate token
-        claimset = {
-                    'email' : json['email'],
-                    'user_id' : uzr.id,
-                    'position' : uzr.position,
-                    'expiring' : datetime.utcnow()+timedelta(minutes=60),
-                    }
-        token = jwt.encode(claimset, app.config['SECRET_KEY'])
         try:
+            # If username and password is not correct
+            pwmatch = check_password_hash(uzr.pw_hash, json['password'])
+            if not pwmatch:
+                return jsonify(get_resp_struct(msg='Invalid email or password')), 401
+
+            # Generate token
+            claimset = {
+                        'email' : json['email'],
+                        'user_id' : uzr.id,
+                        'position' : uzr.position,
+                        'exp' : datetime.utcnow()+timedelta(minutes=30),
+                        }
+            token = jwt.encode(claimset, app.config['SECRET_KEY'], algorithm="HS256")
+
             # Insert token in Token table
             tkn = Token()
-            tkn.user_id = uzr.user_id,
-            tkn.token = token,
+            tkn.user_id = uzr.id
+            tkn.token = token
             tkn.login_ind = True
                     
             session.add(tkn)
             session.commit()
-        except Exception:
+        except Exception as e:
             session.rollback()
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
         else:
             # Return Token
-            return jsonify(get_resp_struct(data={'token':token.decode('UTF-8')})), 200
+            return jsonify(get_resp_struct(data={'token':token})), 200
 
 
 
@@ -96,7 +100,6 @@ class AuthAPI:
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
-
         '''
             request={
                 auth {
@@ -109,35 +112,42 @@ class AuthAPI:
         '''
         json = (self.request.json)['auth']
         try:
+            duplicate = session.query(User).filter(User.email==json['email']).all()
+            if duplicate:
+                return jsonify(get_resp_struct(msg='Email already exists')), 409
+
             uzr = User()
             uzr.name_first = json['name_first']
             uzr.name_last = None if 'name_last' not in json else json['name_last']
             uzr.email = json['email']
             uzr.pw_hash = generate_password_hash(json['password'])
             
+            session.add(uzr)
+            session.commit()
         except Exception:
             session.rollback()
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
-        return jsonify(get_resp_struct(msg='Successful')), 200
+        return jsonify(get_resp_struct(data={'id':uzr.id},msg='Successful')), 200
     
 
-    def sign_out(self, uzr_ctx):
+    def sign_out(self):
         endpoint = 'SignOut'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
 
         try:
-            token = request.authorization.split()[1]
+            token = str(self.request.authorization).split(' ')[1]
             _ = session.query(Token)\
                         .filter(
-                            Token.user_id==uzr_ctx['user_id'],
+                            Token.user_id==self.uzr_ctx['user_id'],
                             Token.token==token,
                         )\
                         .update(
                             {'login_ind' : False},
                             synchronize_session='fetch'
                         )
+            session.commit()
         except Exception:
             session.rollback()
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
