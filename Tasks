@@ -1,0 +1,15 @@
+Documentation:
+Provide clear and concise API documentation, including examples of requests and responses.
+Use any documentation tool of your choice (e.g., Swagger, ReDoc).
+Testing:
+Write unit tests to ensure the correctness of your API endpoints.
+Include instructions on how to run the tests.
+
+Bonus Points (Optional):
+Add filtering options for tasks (e.g., filter by completed status).
+
+Submission:
+Share your codebase via a version control system (e.g., GitHub).
+Include a README.md file with instructions on how to set up and run the application.
+Provide any additional notes or explanations you think are necessary.
+Evaluation Criteria:
