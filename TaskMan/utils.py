@@ -27,7 +27,7 @@ def login_required(f):
         
         # Handle invalid ctx
         if ctx['position'] not in ["USER", "ADMIN"]:
-            return jsonify(get_resp_struct(msg='User Position not in ["USER", "ADMIN"]'))
+            return jsonify(get_resp_struct(msg='User Position not in ["USER", "ADMIN"]')), 403
         
         return f(ctx, *args, **kwargs)
     return is_signedin

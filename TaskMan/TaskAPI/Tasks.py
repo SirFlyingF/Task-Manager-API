@@ -160,8 +160,8 @@ class TaskAPI:
             session.commit()               
         except Exception as e:
             session.rollback()
-            return jsonify(get_resp_struct(msg=str(e) +'Internal Server Error')), 500
-        return jsonify(get_resp_struct(msg='Success')), 200
+            return jsonify(get_resp_struct(msg='Internal Server Error')), 500
+        return jsonify(get_resp_struct(msg='Successful')), 200
     
 
 

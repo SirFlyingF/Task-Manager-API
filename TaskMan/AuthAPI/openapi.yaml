@@ -1,0 +1,214 @@
+openapi: 3.0.0
+info:
+  title: AuthAPI
+  version: 1.0.0
+
+servers:
+  - url: /api
+
+paths:
+  /auth/signup:
+    post:
+      summary: Sign Up user
+      operationId: SignUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              # Add your signup request schema here
+      responses:
+        '200':
+          description: Successful signup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "YOUR_256_CHARACTER_TOKEN"
+                  msg:
+                    type: string
+                    example: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Invalid Request"
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Invalid Email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Invalid Email"
+                  data:
+                    type: string
+                    example: null
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Email already exists"
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Internal Server Error"
+                  data:
+                    type: string
+                    example: null
+
+  /auth/signin:
+    post:
+      summary: Sign In user
+      operationId: SignIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              # Add your signin request schema here
+      responses:
+        '200':
+          description: Successful signin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "YOUR_256_CHARACTER_TOKEN"
+                  msg:
+                    type: string
+                    example: ""
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Invalid Request"
+                  data:
+                    type: string
+                    example: null
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Invalid email or password"
+                  data:
+                    type: string
+                    example: null
+        '404':
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "User Not Found"
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Internal Server Error"
+                  data:
+                    type: string
+                    example: null
+
+  /auth/signout:
+    post:
+      summary: Sign Out user
+      operationId: SignOut
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful signout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: null # No token returned on signout
+                  msg:
+                    type: string
+                    example: ""
+        '403':
+          description: User not signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                  msg:
+                    type: string
+                    example: "User not signed in"
+                  data:
+                    type: string
+                    example: null
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: "Internal Server Error"
+                  data:
+                    type: string
+                    example: null
+
+security:
+  bearerAuth: []
+

@@ -15,9 +15,8 @@ email_regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
 class AuthAPI:
     endpoints = ['SignUp', 'SignIn', 'SignOut']
     
-    def __init__(self, request, uzr_ctx):
+    def __init__(self, request):
         self.request = request
-        self.uzr_ctx = uzr_ctx
 
 
     def _validate_request(self, endpoint):
@@ -130,7 +129,7 @@ class AuthAPI:
         return jsonify(get_resp_struct(data={'id':uzr.id},msg='Successful')), 200
     
 
-    def sign_out(self):
+    def sign_out(self, uzr_ctx):
         endpoint = 'SignOut'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
@@ -140,7 +139,7 @@ class AuthAPI:
             token = str(self.request.authorization).split(' ')[1]
             _ = session.query(Token)\
                         .filter(
-                            Token.user_id==self.uzr_ctx['user_id'],
+                            Token.user_id==uzr_ctx['user_id'],
                             Token.token==token,
                         )\
                         .update(

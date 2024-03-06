@@ -1,0 +1,364 @@
+openapi: 3.0.0
+info:
+  title: Task API
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /tasks/:
+    get:
+      summary: Get all tasks
+      operationId: GetAllTasks
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  msg:
+                    type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '403':
+          description: User not signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+  /tasks/{id}:
+    get:
+      summary: Get a specific task by ID
+      operationId: GetTask
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '403':
+          description: User not signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+    put:
+      summary: Update a specific task by ID
+      operationId: ModifyTask
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '403':
+          description: User not signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+
+    delete:
+      summary: Delete a specific task by ID
+      operationId: DeleteTask
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '403':
+          description: User not signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+    post:
+      summary: Create a new task
+      operationId: AddTask
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                  msg:
+                    type: string
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '403':
+          description: User not signed in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        task_id:
+          type: integer
+        title:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+        completed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        active_ind:
+          type: boolean
