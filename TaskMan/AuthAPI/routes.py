@@ -13,11 +13,11 @@ auth = Blueprint('auth', __name__,)
 
 @auth.route('/signup', methods=['POST'])
 def SignUp():
-    return AuthAPI(request, None).sign_up()
+    return AuthAPI(request).sign_up()
 
 @auth.route('/signin', methods=['POST'])
 def SignIn():
-    return AuthAPI(request, None).sign_in()
+    return AuthAPI(request).sign_in()
 
 @auth.route('/signout', methods=['GET'])
 @login_required

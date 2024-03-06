@@ -126,7 +126,7 @@ class AuthAPI:
         except Exception:
             session.rollback()
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
-        return jsonify(get_resp_struct(data={'id':uzr.id},msg='Successful')), 200
+        return jsonify(get_resp_struct(data={'id':uzr.id}, msg='Successful')), 200
     
 
     def sign_out(self, uzr_ctx):

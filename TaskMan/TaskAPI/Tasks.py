@@ -1,9 +1,3 @@
-'''
-TODO
-implement filtering
-'''
-
-
 from TaskMan.utils import get_resp_struct
 from flask import jsonify
 
@@ -48,18 +42,21 @@ class TaskAPI:
             case 'DeleteTask':
                 # Nothign to validate
                 return True, "", 200
-        return False
+        return False, "Resource not founnd", 404
 
     
 
     def get_all_tasks(self):
         endpoint = 'GetAllTasks'
 
+        # Get only active task
+        # If User is ADMIN do not filter by user id
         q = session.query(Task).filter(Task.active_ind==True)
         if self.uzr_ctx['position'] == 'USER':
             q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))
         
-        # PAginate using query params
+        # Paginate using query params
+        # Default to1 page with 2 tasks per page
         page = 1 if 'page' not in self.request.args else self.request.args.get('page')
         page_size = 20 if 'page_size' not in self.request.args else self.request.args.get('page_size')
         tasks = q.offset((int(page) - 1) * int(page_size)).limit(int(page_size)).all()
@@ -68,17 +65,17 @@ class TaskAPI:
         response['data'] = []
         if not tasks:
             return jsonify(get_resp_struct(msg='Resource Not Found')), 404
-        
         for task in tasks:
             response['data'].append(task._serial())
         return jsonify(response), 200
 
 
 
-
     def get_task(self, id):
         endpoint = 'GetTask'
         try:
+            # Get only active task by task id
+            # Add filter if User position is USER
             q = session.query(Task).filter(
                                         Task.id==id,
                                         Task.active_ind==True,
@@ -94,24 +91,15 @@ class TaskAPI:
             response['data'] = task._serial()
         except Exception as e:
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
-        
         return jsonify(response), 200
     
-
 
     def add_task(self):
         endpoint = 'AddTask'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
-        '''
-        request = {
-            task: {
-                title,
-                description,
-            }
-        }
-        '''
+
         json = (self.request.json)['task']
         try:
             task = Task()
@@ -127,27 +115,20 @@ class TaskAPI:
             return jsonify(get_resp_struct(msg='Internal Server Error')), 500
         return jsonify(get_resp_struct(data={'id':task.id})), 200 
     
+
+
     def modify_task(self, id):
         endpoint = 'ModifyTask'
         valid, msg, http_code = self._validate_request(endpoint)
         if not valid:
             return jsonify(get_resp_struct(msg=msg)), http_code
-        '''
-        request = {
-            task = {
-                description,
-                completed 
-            }
-        }
-        '''
+
         json = (self.request.json)['task']
         try:
             q = session.query(Task).filter(Task.id==id)
             if self.uzr_ctx['position'] == 'USER':
-                print(self.uzr_ctx)
                 q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))
             
-            print(q.statement.compile(compile_kwargs={"literal_binds": True}))
             task = q.first()
             if not task:
                 return jsonify(get_resp_struct(msg='Resource Not Found')), 404
@@ -165,7 +146,6 @@ class TaskAPI:
     
 
 
-
     def delete_task(self, id):
         endpoint = 'DeleteTask'
         valid, msg, http_code = self._validate_request(endpoint)
@@ -173,6 +153,8 @@ class TaskAPI:
             return jsonify(get_resp_struct(msg=msg)), http_code
 
         try:
+            # Only allow a user its own tasks if positios is USER
+            # Allow ADMIN user to delete task
             q = session.query(Task).filter(Task.id==id, Task.active_ind==True)
             if self.uzr_ctx['position'] == 'USER':
                 q = q.filter(Task.user.has(id=self.uzr_ctx['user_id']))

@@ -24,10 +24,11 @@ class DataBase:
 
 database = DataBase()
 
-# Do not call unless creating new DB from scratch
+# Creates all tables in the models.py if not not already existing
 def init_db():
     from . import models
     database.Base.metadata.create_all(bind=database.engine)
+
 
 
     

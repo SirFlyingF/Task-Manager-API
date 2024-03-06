@@ -4,7 +4,8 @@ from .Database.models import Token
 from .Database.database import database
 from flask import current_app as app
 from flask import request, jsonify
-import jwt
+from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError
+from jwt import decode
 
 def get_resp_struct(data=None, msg=''):
     return {'data':data, 'msg':msg}
@@ -21,8 +22,8 @@ def login_required(f):
             return jsonify(get_resp_struct(msg='User not signed in')), 403
         
         try:
-            ctx = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-        except (jwt.exceptions.ExpiredSignatureError,jwt.exceptions.InvalidSignatureError):
+            ctx = decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        except (ExpiredSignatureError, InvalidSignatureError):
             return jsonify(get_resp_struct(msg='User not signed in')), 403
         
         # Handle invalid ctx

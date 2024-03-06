@@ -11,6 +11,7 @@ venv/
 
 # MacOS stuff
 .DS_Store/
+.DS_Store
 
 # sqlite DB
 foo.db

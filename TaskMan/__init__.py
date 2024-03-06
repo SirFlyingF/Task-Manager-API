@@ -1,6 +1,6 @@
 from flask import Flask
 from config import get_config
-from .Database.database import database, init_db
+from .Database.database import database
 
 
 def create_app():
@@ -9,11 +9,10 @@ def create_app():
 
     database.init_session(app)
 
-    # Spin up a new empty DB for tests
-    if app.config['INIT_DB']:
-        init_db()
-
+    # utils need to be imported before blueprints
+    # routes to avoid a circular import
     from . import utils
+    
     from .TaskAPI.routes import tasks
     from .AuthAPI.routes import auth
     app.register_blueprint(tasks, url_prefix='/tasks')

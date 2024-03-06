@@ -1,12 +1,7 @@
-''' 
-Use routrs to dispatch to TaskAPI class
-
-'''
-
 from flask import request
-from TaskMan.utils import login_required, get_resp_struct
+from TaskMan.utils import login_required
 from .Tasks import TaskAPI
-from flask import Blueprint, jsonify
+from flask import Blueprint
 
 tasks = Blueprint('tasks', __name__,)
 

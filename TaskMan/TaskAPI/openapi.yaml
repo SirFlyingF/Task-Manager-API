@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Task API
+  title: TaskAPI
   version: 1.0.0
 
 servers:
@@ -11,6 +11,8 @@ paths:
     get:
       summary: Get all tasks
       operationId: GetAllTasks
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Successful operation
@@ -65,10 +67,22 @@ paths:
     get:
       summary: Get a specific task by ID
       operationId: GetTask
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
           required: true
+          schema:
+            type: integer
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: page_size
+          required: false
           schema:
             type: integer
       responses:
@@ -129,6 +143,8 @@ paths:
     put:
       summary: Update a specific task by ID
       operationId: ModifyTask
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -140,7 +156,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Task'
+              type: object
+              properties:
+                task:
+                  type: object
+                  properties:
+                    completed:
+                      type: boolean
+                      description: Whether the task is completed or not
+                    description:
+                      type: string
+                      description: Description of the task
       responses:
         '200':
           description: Successful operation
@@ -206,6 +232,8 @@ paths:
     delete:
       summary: Delete a specific task by ID
       operationId: DeleteTask
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -276,18 +304,30 @@ paths:
     post:
       summary: Create a new task
       operationId: AddTask
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      description: task title
+                    description:
+                      type: string
+                      description: Description of the task
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Task'
       responses:
         '200':
           description: Successful operation
@@ -362,3 +402,6 @@ components:
           format: date-time
         active_ind:
           type: boolean
+
+security:
+  bearerAuth: []

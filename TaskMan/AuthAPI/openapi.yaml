@@ -16,7 +16,26 @@ paths:
         content:
           application/json:
             schema:
-              # Add your signup request schema here
+              type: object
+              properties:
+                auth:
+                  type: object
+                  properties:
+                    name_first:
+                      type: string
+                      description: First name of the user
+                      required: true
+                    name_last:
+                      type: string
+                      description: Last name of the use
+                    email:
+                      type: string
+                      description: User's email
+                      required: true
+                    password:
+                      type: string
+                      description: Password to set
+                      required: true
       responses:
         '200':
           description: Successful signup
@@ -93,7 +112,19 @@ paths:
         content:
           application/json:
             schema:
-              # Add your signin request schema here
+              type: object
+              properties:
+                auth:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      description: User's email
+                      required: true
+                    password:
+                      type: string
+                      description: Password to set
+                      required: true
       responses:
         '200':
           description: Successful signin

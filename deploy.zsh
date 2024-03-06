@@ -5,7 +5,9 @@ if [[ ! -f .env ]]; then
 fi
 
 # Load the .env file using source
+set -a
 source .env
+set +a
 
 # Spin up a gunicorn server
 gunicorn --bind ${HOST}:${PORT} --workers 1  TaskMan:app
